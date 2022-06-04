@@ -95,6 +95,11 @@
                   <Font size="24.0" />
                </font>
             </Button>
+            <Button fx:id="homeExitButton" layoutX="873.0" layoutY="516.0" mnemonicParsing="false" onAction="#onHomeExitButtonPress" prefHeight="96.0" prefWidth="168.0" text="Exit" textAlignment="CENTER" wrapText="true">
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Button>
          </children>
       </Pane>
    </children>
