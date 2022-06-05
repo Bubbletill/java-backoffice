@@ -3,6 +3,7 @@ package store.bubbletill.backoffice.controllers;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -23,23 +24,21 @@ import store.bubbletill.backoffice.data.OperatorData;
 
 public class LoginController {
 
-    @FXML
-    private TextField userIdForm;
+    @FXML private TextField userIdForm;
+    @FXML private PasswordField passwordForm;
 
-    @FXML
-    private PasswordField passwordForm;
+    @FXML private Pane errorPane;
+    @FXML private Label errorLabel;
 
-    @FXML
-    private Pane errorPane;
-
-    @FXML
-    private Label errorLabel;
+    @FXML private Button exitButton;
 
     @FXML
     public void initialize() {
         System.out.println("LoginController Initialized");
         userIdForm.requestFocus();
         errorPane.setVisible(false);
+
+        exitButton.setDisable(BOApplication.getInstance().register == -1);
     }
 
     private void showError(String error) {
@@ -79,7 +78,7 @@ public class LoginController {
             BOApplication.getInstance().operator = BOApplication.gson.fromJson(out, OperatorData.class);
 
             if (!BOApplication.getInstance().operator.isManager()) {
-                showError("You are not authorized to use Backoffice.");
+                showError("You are not authorized to use Back Office.");
                 BOApplication.buzzer("double");
                 BOApplication.getInstance().operator = null;
                 return;
