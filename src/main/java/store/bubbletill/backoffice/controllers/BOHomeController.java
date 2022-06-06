@@ -39,6 +39,7 @@ public class BOHomeController {
     // Top status bar
     @FXML private Label dateTimeLabel;
     @FXML private Label statusLabel;
+    @FXML private Label registerTextLabel;
     @FXML private Label registerLabel;
     @FXML private Label storeLabel;
     @FXML private Label operatorLabel;
@@ -73,6 +74,9 @@ public class BOHomeController {
         registerLabel.setText(app.register == -1 ? "N/A" : "" + app.register);
         storeLabel.setText("" + app.store);
         operatorLabel.setText(app.operator.getOperatorId());
+
+        registerLabel.setVisible(app.register != -1);
+        registerTextLabel.setVisible(app.register != -1);
 
         homeNameLabel.setText("Welcome, " + app.operator.getName() + ".");
 
