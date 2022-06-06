@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="1080.0" prefWidth="1920.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="store.bubbletill.backoffice.controllers.BOHomeController">
+<AnchorPane prefHeight="1080.0" prefWidth="1920.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="store.bubbletill.backoffice.controllers.BOHomeController">
    <children>
       <Pane prefHeight="70.0" prefWidth="1920.0" style="-fx-background-color: #ffe0e0;">
          <children>
@@ -99,7 +106,7 @@
             </Button>
          </children>
       </Pane>
-      <Pane fx:id="userManPane" layoutY="70.0" prefHeight="1010.0" prefWidth="1920.0">
+      <Pane fx:id="userManPane" layoutY="70.0" prefHeight="1010.0" prefWidth="1920.0" visible="false">
          <children>
             <Label layoutX="36.0" layoutY="14.0" prefHeight="53.0" prefWidth="691.0" text="User Management">
                <font>
@@ -131,6 +138,118 @@
                   </TableView>
                </children>
             </Pane>
+         </children>
+      </Pane>
+      <Pane fx:id="transHistoryPane" layoutY="70.0" prefHeight="1010.0" prefWidth="1920.0">
+         <children>
+            <Label layoutX="36.0" layoutY="14.0" prefHeight="53.0" prefWidth="691.0" text="Transaction History">
+               <font>
+                  <Font size="36.0" />
+               </font>
+            </Label>
+            <TableView layoutX="435.0" layoutY="67.0" prefHeight="859.0" prefWidth="813.0">
+              <columns>
+                  <TableColumn prefWidth="113.0" text="Store" />
+                <TableColumn prefWidth="113.0" text="Date" />
+                <TableColumn prefWidth="113.0" text="Time" />
+                  <TableColumn prefWidth="113.0" text="Register" />
+                  <TableColumn prefWidth="113.0" text="Operator" />
+                  <TableColumn prefWidth="113.0" text="Total" />
+                  <TableColumn prefWidth="133.0" text="Method" />
+              </columns>
+            </TableView>
+            <Label layoutX="36.0" layoutY="67.0" prefHeight="27.0" prefWidth="307.0" text="Store">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <TextField fx:id="historyStoreInput" layoutX="36.0" layoutY="94.0" prefHeight="30.0" prefWidth="307.0" promptText="219">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </TextField>
+            <Label layoutX="36.0" layoutY="137.0" prefHeight="27.0" prefWidth="307.0" text="Start Date">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <DatePicker fx:id="historyStartDateInput" layoutX="36.0" layoutY="164.0" prefHeight="30.0" prefWidth="307.0" />
+            <Label layoutX="36.0" layoutY="207.0" prefHeight="27.0" prefWidth="307.0" text="End Date">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <DatePicker fx:id="historyEndDateInput" layoutX="36.0" layoutY="234.0" prefHeight="30.0" prefWidth="307.0" />
+            <Label layoutX="36.0" layoutY="277.0" prefHeight="27.0" prefWidth="307.0" text="Start Time">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <TextField fx:id="historyStartTimeInput" layoutX="36.0" layoutY="304.0" prefHeight="30.0" prefWidth="307.0" promptText="11:00">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </TextField>
+            <Label layoutX="36.0" layoutY="347.0" prefHeight="27.0" prefWidth="307.0" text="End Time">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <TextField fx:id="historyEndTimeInput" layoutX="36.0" layoutY="374.0" prefHeight="30.0" prefWidth="307.0" promptText="12:00">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </TextField>
+            <Label layoutX="36.0" layoutY="417.0" prefHeight="27.0" prefWidth="307.0" text="Register">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <TextField fx:id="historyRegisterInput" layoutX="36.0" layoutY="444.0" prefHeight="30.0" prefWidth="307.0" promptText="3, blank for all">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </TextField>
+            <Label layoutX="36.0" layoutY="487.0" prefHeight="27.0" prefWidth="307.0" text="Operator">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <TextField fx:id="historyOperatorInput" layoutX="36.0" layoutY="514.0" prefHeight="30.0" prefWidth="307.0" promptText="3894, blank for all">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </TextField>
+            <Label layoutX="36.0" layoutY="556.0" prefHeight="27.0" prefWidth="307.0" text="Start Total">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <TextField fx:id="historyStartTotalInput" layoutX="36.0" layoutY="584.0" prefHeight="30.0" prefWidth="307.0" promptText="10.00">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </TextField>
+            <Label layoutX="36.0" layoutY="626.0" prefHeight="27.0" prefWidth="307.0" text="End Total">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <TextField fx:id="historyEndTotalInput" layoutX="36.0" layoutY="654.0" prefHeight="30.0" prefWidth="307.0" promptText="20.00">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </TextField>
+            <Button layoutX="36.0" layoutY="878.0" mnemonicParsing="false" onAction="#onHistorySubmitButtonPress" prefHeight="96.0" prefWidth="168.0" text="Submit" textAlignment="CENTER" wrapText="true">
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Button>
+            <Button layoutX="1728.0" layoutY="878.0" mnemonicParsing="false" onAction="#onHistoryBackButtonPress" prefHeight="96.0" prefWidth="168.0" text="Back" textAlignment="CENTER" wrapText="true">
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Button>
          </children>
       </Pane>
    </children>

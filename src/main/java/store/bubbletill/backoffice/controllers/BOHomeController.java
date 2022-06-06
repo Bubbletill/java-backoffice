@@ -4,13 +4,14 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
+import javafx.util.converter.DateTimeStringConverter;
+import javafx.util.converter.TimeStringConverter;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -21,7 +22,10 @@ import org.apache.http.util.EntityUtils;
 import store.bubbletill.backoffice.BOApplication;
 import store.bubbletill.backoffice.data.OperatorData;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -35,6 +39,19 @@ public class BOHomeController {
     @FXML private Pane userManPane;
     @FXML private Pane userManListPane;
     @FXML private TableView<OperatorData> userManListTable;
+
+    // Transaction History
+    @FXML private Pane transHistoryPane;
+    @FXML private TextField historyStoreInput;
+    @FXML private DatePicker historyStartDateInput;
+    @FXML private DatePicker historyEndDateInput;
+    @FXML private TextField historyStartTimeInput;
+    @FXML private TextField historyEndTimeInput;
+    @FXML private TextField historyRegisterInput;
+    @FXML private TextField historyOperatorInput;
+    @FXML private TextField historyStartTotalInput;
+    @FXML private TextField historyEndTotalInput;
+    private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
 
     // Top status bar
     @FXML private Label dateTimeLabel;
@@ -56,6 +73,7 @@ public class BOHomeController {
         errorPane.setVisible(false);
         homePane.setVisible(true);
         userManPane.setVisible(false);
+        transHistoryPane.setVisible(false);
 
         if (app.dateTimeTimer != null)
             app.dateTimeTimer.cancel();
@@ -86,6 +104,39 @@ public class BOHomeController {
         userManListTable.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("name"));
 
         homeExitButton.setText(app.register == -1 ? "Logout" : "Exit");
+
+        StringConverter<LocalDate> dateStringConverter = new StringConverter<>() {
+            final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yy");
+
+            @Override
+            public String toString(LocalDate date) {
+                if (date != null) {
+                    return formatter.format(date);
+                } else {
+                    return "";
+                }
+            }
+
+            @Override
+            public LocalDate fromString(String string) {
+                if (string != null && !string.isEmpty()) {
+                    return LocalDate.parse(string, formatter);
+                } else {
+                    return null;
+                }
+            }
+        };
+
+        historyStartDateInput.setConverter(dateStringConverter);
+        historyEndDateInput.setConverter(dateStringConverter);
+
+        try {
+            historyStartTimeInput.setTextFormatter(new TextFormatter<>(new DateTimeStringConverter(timeFormat), timeFormat.parse("00:00")));
+            historyEndTimeInput.setTextFormatter(new TextFormatter<>(new DateTimeStringConverter(timeFormat), timeFormat.parse("00:00")));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void showError(String error) {
@@ -123,7 +174,27 @@ public class BOHomeController {
         }
     }
 
-    @FXML private void onHomeTransactionHistoryButtonPress() { }
+    @FXML private void onHomeTransactionHistoryButtonPress() {
+        historyStoreInput.setText("" + app.store);
+
+        historyStartDateInput.setValue(LocalDate.now());
+        historyEndDateInput.setValue(LocalDate.now());
+
+        historyStartTimeInput.setText(LocalTime.MIN.toString());
+        historyEndTimeInput.setText(LocalTime.MAX.toString());
+
+        historyRegisterInput.setText("" + (app.register == -1 ? "" : app.register));
+
+        historyOperatorInput.setText("");
+
+        historyStartTotalInput.setText("");
+        historyEndTotalInput.setText("");
+
+        showError(null);
+        homePane.setVisible(false);
+        transHistoryPane.setVisible(true);
+    }
+
     @FXML private void onHomeStoreOperationsButtonPress() { }
 
     @FXML private void onHomeManageUsersButtonPress() {
@@ -152,6 +223,7 @@ public class BOHomeController {
             return;
         }
 
+        showError(null);
         homePane.setVisible(false);
         userManPane.setVisible(true);
         userManListPane.setVisible(true);
@@ -174,6 +246,16 @@ public class BOHomeController {
         showError(null);
         homePane.setVisible(true);
         userManPane.setVisible(false);
+    }
+
+    // Transaction History
+
+    @FXML private void onHistorySubmitButtonPress() { }
+
+    @FXML private void onHistoryBackButtonPress() {
+        showError(null);
+        homePane.setVisible(true);
+        transHistoryPane.setVisible(false);
     }
 
 
