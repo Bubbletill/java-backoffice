@@ -10,10 +10,15 @@ import javafx.stage.StageStyle;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import store.bubbletill.backoffice.controllers.StartupErrorController;
 import store.bubbletill.backoffice.data.OperatorData;
+import store.bubbletill.backoffice.data.Transaction;
+import store.bubbletill.backoffice.data.TransactionListData;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -117,5 +122,40 @@ public class BOApplication extends Application {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public Transaction getTransaction(int store, int register, int trans, String date) {
+        try {
+            HttpClient httpClient = HttpClientBuilder.create().build();
+
+            StringEntity requestEntity = new StringEntity(
+                    "{"
+                            + "\"store\": \"" + store
+                            + "\", \"register\": \"" + register
+                            + "\", \"trans\": \"" + trans
+                            + "\", \"date\": \"" + date
+                            + "\", \"token\" :\"" + accessToken
+                            + "\"}",
+                    ContentType.APPLICATION_JSON);
+
+            HttpPost postMethod = new HttpPost("http://localhost:5000/bo/gettrans");
+            postMethod.setEntity(requestEntity);
+
+            HttpResponse rawResponse = httpClient.execute(postMethod);
+            String out = EntityUtils.toString(rawResponse.getEntity());
+
+            Transaction transObj;
+            try {
+               transObj = gson.fromJson(out, Transaction.class);
+            } catch (Exception e) {
+                return null; // Assuming the API returned a no trans found
+            }
+
+            return transObj;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

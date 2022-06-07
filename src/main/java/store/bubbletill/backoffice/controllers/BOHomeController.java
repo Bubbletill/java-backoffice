@@ -11,7 +11,6 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import javafx.util.converter.DateTimeStringConverter;
-import javafx.util.converter.TimeStringConverter;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -21,12 +20,16 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import store.bubbletill.backoffice.BOApplication;
 import store.bubbletill.backoffice.data.OperatorData;
+import store.bubbletill.backoffice.data.StockData;
+import store.bubbletill.backoffice.data.Transaction;
+import store.bubbletill.backoffice.data.TransactionListData;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -42,6 +45,7 @@ public class BOHomeController {
 
     // Transaction History
     @FXML private Pane transHistoryPane;
+    @FXML private TableView<TransactionListData> historyTable;
     @FXML private TextField historyStoreInput;
     @FXML private DatePicker historyStartDateInput;
     @FXML private DatePicker historyEndDateInput;
@@ -52,6 +56,21 @@ public class BOHomeController {
     @FXML private TextField historyStartTotalInput;
     @FXML private TextField historyEndTotalInput;
     private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+
+    // Transaction View
+    @FXML private Pane transViewPane;
+    @FXML private TableView<StockData> transViewTable;
+    @FXML private Label transViewStoreLabel;
+    @FXML private Label transViewRegisterLabel;
+    @FXML private Label transViewTransLabel;
+    @FXML private Label transViewDateLabel;
+    @FXML private Label transViewTimeLabel;
+    @FXML private Label transViewTypeLabel;
+    @FXML private Label transViewPrimMethodLabel;
+    @FXML private Label transViewTotalLabel;
+    @FXML private Label transViewVoidedLabel;
+    @FXML private Label transViewOperatorLabel;
+    @FXML private Label transViewManAuthLabel;
 
     // Top status bar
     @FXML private Label dateTimeLabel;
@@ -65,6 +84,7 @@ public class BOHomeController {
 
     private BOApplication app;
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm");
+    DateTimeFormatter dbDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yy");
 
     @FXML
     private void initialize() {
@@ -74,6 +94,7 @@ public class BOHomeController {
         homePane.setVisible(true);
         userManPane.setVisible(false);
         transHistoryPane.setVisible(false);
+        transViewPane.setVisible(false);
 
         if (app.dateTimeTimer != null)
             app.dateTimeTimer.cancel();
@@ -137,6 +158,21 @@ public class BOHomeController {
             e.printStackTrace();
         }
 
+        historyTable.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("store"));
+        historyTable.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("date"));
+        historyTable.getColumns().get(2).setCellValueFactory(new PropertyValueFactory<>("time"));
+        historyTable.getColumns().get(3).setCellValueFactory(new PropertyValueFactory<>("register"));
+        historyTable.getColumns().get(4).setCellValueFactory(new PropertyValueFactory<>("trans"));
+        historyTable.getColumns().get(5).setCellValueFactory(new PropertyValueFactory<>("oper"));
+        historyTable.getColumns().get(6).setCellValueFactory(new PropertyValueFactory<>("total"));
+        historyTable.getColumns().get(7).setCellValueFactory(new PropertyValueFactory<>("primary_method"));
+
+        transViewTable.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("category"));
+        transViewTable.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("itemCode"));
+        transViewTable.getColumns().get(2).setCellValueFactory(new PropertyValueFactory<>("description"));
+        transViewTable.getColumns().get(3).setCellValueFactory(new PropertyValueFactory<>("price"));
+        transViewTable.getColumns().get(4).setCellValueFactory(new PropertyValueFactory<>("priceWithReduction"));
+        transViewTable.getColumns().get(5).setCellValueFactory(new PropertyValueFactory<>("refunded"));
     }
 
     private void showError(String error) {
@@ -176,6 +212,7 @@ public class BOHomeController {
 
     @FXML private void onHomeTransactionHistoryButtonPress() {
         historyStoreInput.setText("" + app.store);
+        historyStoreInput.setDisable(true);
 
         historyStartDateInput.setValue(LocalDate.now());
         historyEndDateInput.setValue(LocalDate.now());
@@ -189,6 +226,8 @@ public class BOHomeController {
 
         historyStartTotalInput.setText("");
         historyEndTotalInput.setText("");
+
+        historyTable.getItems().clear();
 
         showError(null);
         homePane.setVisible(false);
@@ -250,13 +289,102 @@ public class BOHomeController {
 
     // Transaction History
 
-    @FXML private void onHistorySubmitButtonPress() { }
+    @FXML private void onHistorySubmitButtonPress() {
+        historyTable.getItems().clear();
+        try {
+            HttpClient httpClient = HttpClientBuilder.create().build();
+
+            StringEntity requestEntity = new StringEntity(
+                    "{"
+                            + "\"store\": \"" + historyStoreInput.getText()
+                            + "\", \"startDate\": \"" + dbDateFormatter.format(historyStartDateInput.getValue())
+                            + "\", \"endDate\": \"" + dbDateFormatter.format(historyEndDateInput.getValue())
+                            + "\", \"startTime\": \"" + historyStartTimeInput.getText()
+                            + "\", \"endTime\": \"" + historyEndTimeInput.getText()
+                            + "\", \"register\": \"" + (historyRegisterInput.getText() == null || historyRegisterInput.getText().isEmpty() ? "" : historyRegisterInput.getText())
+                            + "\", \"operator\": \"" + (historyOperatorInput.getText() == null || historyOperatorInput.getText().isEmpty() ? "" : historyOperatorInput.getText())
+                            + "\", \"startTotal\": \"" + (historyStartTotalInput.getText() == null || historyStartTotalInput.getText().isEmpty() ? Double.MIN_VALUE : Double.parseDouble(historyStartTotalInput.getText()))
+                            + "\", \"endTotal\": \"" + (historyEndTotalInput.getText() == null || historyEndTotalInput.getText().isEmpty() ? Double.MAX_VALUE : Double.parseDouble(historyEndTotalInput.getText()))
+                            + "\", \"token\" :\"" + app.accessToken
+                            + "\"}",
+                    ContentType.APPLICATION_JSON);
+
+            HttpPost postMethod = new HttpPost("http://localhost:5000/bo/listtransactions");
+            postMethod.setEntity(requestEntity);
+
+            HttpResponse rawResponse = httpClient.execute(postMethod);
+            String out = EntityUtils.toString(rawResponse.getEntity());
+
+            TransactionListData[] listData = BOApplication.gson.fromJson(out, TransactionListData[].class);
+
+            for (TransactionListData t : listData) {
+                historyTable.getItems().add(t);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML private void onHistoryViewSelectedButtonPress() {
+        showError(null);
+        transViewTable.getItems().clear();
+        if (historyTable.getSelectionModel().getSelectedItem() == null) {
+            showError("Please select a transaction to view.");
+            return;
+        }
+
+        TransactionListData selected = historyTable.getSelectionModel().getSelectedItem();
+
+        Transaction trans = BOApplication.gson.fromJson(selected.getItems(), Transaction.class);
+
+        transViewStoreLabel.setText("Store: " + selected.getStore());
+        transViewRegisterLabel.setText("Register: " + selected.getRegister());
+        transViewTransLabel.setText("Transaction: " + selected.getTrans());
+        transViewDateLabel.setText("Date: " + selected.getDate());
+        transViewTimeLabel.setText("Time: " + selected.getTime());
+
+        transViewTypeLabel.setText("Transaction Type: " + selected.getType().getLocalName());
+        transViewPrimMethodLabel.setText("Primary Payment Method: " + selected.getPrimary_method().getLocalName());
+        transViewTotalLabel.setText("Total: £" + BOApplication.df.format(selected.getTotal()));
+        transViewVoidedLabel.setText("Voided: " + ((trans.isVoided()) ? "Yes" : "No"));
+        transViewOperatorLabel.setText("Operator: " + selected.getOper());
+
+        StringBuilder mngrActions = new StringBuilder("");
+        if (!trans.getManagerActions().isEmpty()) {
+            for (Map.Entry<String, String> e : trans.getManagerActions().entrySet()) {
+                String addon = "";
+                if (!mngrActions.isEmpty())
+                    addon = ", ";
+                mngrActions.append(e.getKey()).append(" (").append(e.getValue()).append(")");
+            }
+
+            transViewManAuthLabel.setText(mngrActions.toString());
+        } else {
+            transViewManAuthLabel.setText("N/A");
+        }
+
+        for (StockData item : trans.getBasket()) {
+            transViewTable.getItems().add(item);
+        }
+
+        transHistoryPane.setVisible(false);
+        transViewPane.setVisible(true);
+    }
+
+    @FXML private void onTransViewPrintReceiptButtonPress() {}
+
+    @FXML private void onTransViewBackButtonPress() {
+        showError(null);
+        transHistoryPane.setVisible(true);
+        transViewPane.setVisible(false);
+    }
+
 
     @FXML private void onHistoryBackButtonPress() {
         showError(null);
         homePane.setVisible(true);
         transHistoryPane.setVisible(false);
     }
-
 
 }

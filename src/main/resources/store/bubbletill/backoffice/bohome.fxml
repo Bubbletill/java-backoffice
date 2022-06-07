@@ -140,19 +140,20 @@
             </Pane>
          </children>
       </Pane>
-      <Pane fx:id="transHistoryPane" layoutY="70.0" prefHeight="1010.0" prefWidth="1920.0">
+      <Pane fx:id="transHistoryPane" layoutY="70.0" prefHeight="1010.0" prefWidth="1920.0" visible="false">
          <children>
             <Label layoutX="36.0" layoutY="14.0" prefHeight="53.0" prefWidth="691.0" text="Transaction History">
                <font>
                   <Font size="36.0" />
                </font>
             </Label>
-            <TableView layoutX="435.0" layoutY="67.0" prefHeight="859.0" prefWidth="813.0">
+            <TableView fx:id="historyTable" layoutX="435.0" layoutY="67.0" prefHeight="859.0" prefWidth="927.0">
               <columns>
                   <TableColumn prefWidth="113.0" text="Store" />
                 <TableColumn prefWidth="113.0" text="Date" />
                 <TableColumn prefWidth="113.0" text="Time" />
                   <TableColumn prefWidth="113.0" text="Register" />
+                  <TableColumn prefWidth="113.0" text="Transaction " />
                   <TableColumn prefWidth="113.0" text="Operator" />
                   <TableColumn prefWidth="113.0" text="Total" />
                   <TableColumn prefWidth="133.0" text="Method" />
@@ -240,12 +241,112 @@
                   <Font size="14.0" />
                </font>
             </TextField>
-            <Button layoutX="36.0" layoutY="878.0" mnemonicParsing="false" onAction="#onHistorySubmitButtonPress" prefHeight="96.0" prefWidth="168.0" text="Submit" textAlignment="CENTER" wrapText="true">
+            <Button layoutX="36.0" layoutY="878.0" mnemonicParsing="false" onAction="#onHistorySubmitButtonPress" prefHeight="96.0" prefWidth="168.0" text="Search" textAlignment="CENTER" wrapText="true">
                <font>
                   <Font size="24.0" />
                </font>
             </Button>
             <Button layoutX="1728.0" layoutY="878.0" mnemonicParsing="false" onAction="#onHistoryBackButtonPress" prefHeight="96.0" prefWidth="168.0" text="Back" textAlignment="CENTER" wrapText="true">
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Button>
+            <Button layoutX="234.0" layoutY="878.0" mnemonicParsing="false" onAction="#onHistoryViewSelectedButtonPress" prefHeight="96.0" prefWidth="168.0" text="View Selected" textAlignment="CENTER" wrapText="true">
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Button>
+         </children>
+      </Pane>
+      <Pane fx:id="transViewPane" layoutY="70.0" prefHeight="1010.0" prefWidth="1920.0">
+         <children>
+            <Label layoutX="36.0" layoutY="14.0" prefHeight="53.0" prefWidth="691.0" text="Transaction View">
+               <font>
+                  <Font size="36.0" />
+               </font>
+            </Label>
+            <TableView fx:id="transViewTable" layoutX="435.0" layoutY="67.0" prefHeight="859.0" prefWidth="682.0">
+               <columns>
+                  <TableColumn prefWidth="113.0" text="Category" />
+                  <TableColumn prefWidth="113.0" text="Item Code" />
+                  <TableColumn prefWidth="113.0" text="Description" />
+                  <TableColumn prefWidth="113.0" text="Unit Price" />
+                  <TableColumn prefWidth="113.0" text="Sold Price" />
+                  <TableColumn prefWidth="113.0" text="Refunded?" />
+               </columns>
+            </TableView>
+            <TableView fx:id="transViewTenderTable" layoutX="1151.0" layoutY="67.0" prefHeight="859.0" prefWidth="230.0" visible="false">
+               <columns>
+                  <TableColumn prefWidth="113.0" text="Method" />
+                  <TableColumn prefWidth="113.0" text="Amount" />
+               </columns>
+            </TableView>
+            <Label fx:id="transViewStoreLabel" layoutX="36.0" layoutY="85.0" prefHeight="27.0" prefWidth="307.0" text="Store: 1">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <Label fx:id="transViewRegisterLabel" layoutX="36.0" layoutY="112.0" prefHeight="27.0" prefWidth="307.0" text="Register: 1">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <Label fx:id="transViewTransLabel" layoutX="36.0" layoutY="139.0" prefHeight="27.0" prefWidth="307.0" text="Transaction: 1">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <Label fx:id="transViewDateLabel" layoutX="36.0" layoutY="166.0" prefHeight="27.0" prefWidth="307.0" text="Date: 11/11/11">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <Label fx:id="transViewTimeLabel" layoutX="36.0" layoutY="193.0" prefHeight="27.0" prefWidth="307.0" text="Time: 11:11">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <Label fx:id="transViewPrimMethodLabel" layoutX="36.0" layoutY="303.0" prefHeight="27.0" prefWidth="390.0" text="Primary Payment Method: X">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <Label fx:id="transViewTotalLabel" layoutX="36.0" layoutY="276.0" prefHeight="27.0" prefWidth="390.0" text="Total: £11.11">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <Label fx:id="transViewVoidedLabel" layoutX="36.0" layoutY="330.0" prefHeight="27.0" prefWidth="390.0" text="Voided: Y/N">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <Label fx:id="transViewOperatorLabel" layoutX="36.0" layoutY="357.0" prefHeight="27.0" prefWidth="390.0" text="Operator: 1111">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <Label fx:id="transViewTypeLabel" layoutX="36.0" layoutY="249.0" prefHeight="27.0" prefWidth="390.0" text="Transaction Type: X">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <Label layoutX="36.0" layoutY="407.0" prefHeight="27.0" prefWidth="390.0" text="Manager Authorized Actions:">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <Label fx:id="transViewManAuthLabel" layoutX="36.0" layoutY="434.0" prefHeight="27.0" prefWidth="390.0" text="NA">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <Button layoutX="22.0" layoutY="761.0" mnemonicParsing="false" onAction="#onTransViewPrintReceiptButtonPress" prefHeight="96.0" prefWidth="168.0" text="Print Receipt" textAlignment="CENTER" wrapText="true">
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Button>
+            <Button layoutX="22.0" layoutY="878.0" mnemonicParsing="false" onAction="#onTransViewBackButtonPress" prefHeight="96.0" prefWidth="168.0" text="Back" textAlignment="CENTER" wrapText="true">
                <font>
                   <Font size="24.0" />
                </font>
