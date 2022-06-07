@@ -291,6 +291,7 @@ public class BOHomeController {
 
     @FXML private void onHistorySubmitButtonPress() {
         historyTable.getItems().clear();
+        showError(null);
         try {
             HttpClient httpClient = HttpClientBuilder.create().build();
 
@@ -320,6 +321,9 @@ public class BOHomeController {
             for (TransactionListData t : listData) {
                 historyTable.getItems().add(t);
             }
+
+            if (listData.length == 0)
+                showError("Search returned no results.");
         } catch (Exception e) {
             e.printStackTrace();
             showError(e.getMessage());
