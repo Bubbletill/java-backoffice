@@ -376,7 +376,34 @@ public class BOHomeController {
         transViewPane.setVisible(true);
     }
 
-    @FXML private void onTransViewPrintReceiptButtonPress() {}
+    @FXML private void onTransViewPrintReceiptButtonPress() {
+        try {
+            TransactionListData selected = historyTable.getSelectionModel().getSelectedItem();
+            String items = selected.getItems().replaceAll("\"", "\\\\\"");
+
+            HttpClient httpClient = HttpClientBuilder.create().build();
+            StringEntity requestEntity = new StringEntity(
+                    "{"
+                            + "\"store\": \"" + selected.getStore()
+                            + "\", \"reg\": \"" + selected.getRegister()
+                            + "\", \"trans\": \"" + selected.getTrans()
+                            + "\", \"oper\": \"" + selected.getOper()
+                            + "\", \"datetime\": \"" + selected.getDate() + " " + selected.getTime()
+                            + "\", \"items\": \"" + items
+                            + "\", \"paydata\": \"" + "NA"
+                            + "\", \"copy\": true"
+                            + "}",
+                    ContentType.APPLICATION_JSON);
+
+            HttpPost postMethod = new HttpPost("http://localhost:5001/print/receipt");
+            postMethod.setEntity(requestEntity);
+
+            HttpResponse rawResponse = httpClient.execute(postMethod);
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError(e.getMessage());
+        }
+    }
 
     @FXML private void onTransViewBackButtonPress() {
         showError(null);
