@@ -16,9 +16,9 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import store.bubbletill.backoffice.controllers.StartupErrorController;
-import store.bubbletill.backoffice.data.OperatorData;
-import store.bubbletill.backoffice.data.Transaction;
-import store.bubbletill.backoffice.data.TransactionListData;
+import store.bubbletill.commons.OperatorData;
+import store.bubbletill.commons.Transaction;
+import store.bubbletill.commons.TransactionListData;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -29,7 +29,6 @@ public class BOApplication extends Application {
     public static BOApplication instance;
 
     public static Gson gson = new Gson();
-    public static final DecimalFormat df = new DecimalFormat("0.00");
     private Stage stage;
     public Timer dateTimeTimer;
 

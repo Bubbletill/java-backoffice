@@ -16,6 +16,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>store.bubbletill</groupId>
+            <artifactId>commons</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
             <version>18-ea+2</version>

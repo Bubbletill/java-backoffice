@@ -19,8 +19,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import store.bubbletill.backoffice.BOApplication;
-import store.bubbletill.backoffice.data.ApiRequestData;
-import store.bubbletill.backoffice.data.OperatorData;
+import store.bubbletill.commons.ApiRequestData;
+import store.bubbletill.commons.OperatorData;
 
 public class LoginController {
 
@@ -34,7 +34,6 @@ public class LoginController {
 
     @FXML
     public void initialize() {
-        System.out.println("LoginController Initialized");
         userIdForm.requestFocus();
         errorPane.setVisible(false);
 

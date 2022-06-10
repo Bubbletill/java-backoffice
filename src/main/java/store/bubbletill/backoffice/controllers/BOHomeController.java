@@ -19,10 +19,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import store.bubbletill.backoffice.BOApplication;
-import store.bubbletill.backoffice.data.OperatorData;
-import store.bubbletill.backoffice.data.StockData;
-import store.bubbletill.backoffice.data.Transaction;
-import store.bubbletill.backoffice.data.TransactionListData;
+import store.bubbletill.commons.*;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -350,7 +347,7 @@ public class BOHomeController {
 
         transViewTypeLabel.setText("Transaction Type: " + selected.getType().getLocalName());
         transViewPrimMethodLabel.setText("Primary Payment Method: " + selected.getPrimary_method().getLocalName());
-        transViewTotalLabel.setText("Total: £" + BOApplication.df.format(selected.getTotal()));
+        transViewTotalLabel.setText("Total: £" + Formatters.decimalFormatter.format(selected.getTotal()));
         transViewVoidedLabel.setText("Voided: " + ((trans.isVoided()) ? "Yes" : "No"));
         transViewOperatorLabel.setText("Operator: " + selected.getOper());
 
