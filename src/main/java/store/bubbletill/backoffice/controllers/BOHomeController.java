@@ -68,6 +68,7 @@ public class BOHomeController {
     @FXML private Label transViewVoidedLabel;
     @FXML private Label transViewOperatorLabel;
     @FXML private Label transViewManAuthLabel;
+    @FXML private Button transViewPostVoidButton;
 
     // Top status bar
     @FXML private Label dateTimeLabel;
@@ -156,8 +157,8 @@ public class BOHomeController {
         }
 
         historyTable.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("store"));
-        historyTable.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("date"));
-        historyTable.getColumns().get(2).setCellValueFactory(new PropertyValueFactory<>("time"));
+        historyTable.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("dateTime"));
+        historyTable.getColumns().get(2).setCellValueFactory(new PropertyValueFactory<>("type"));
         historyTable.getColumns().get(3).setCellValueFactory(new PropertyValueFactory<>("register"));
         historyTable.getColumns().get(4).setCellValueFactory(new PropertyValueFactory<>("trans"));
         historyTable.getColumns().get(5).setCellValueFactory(new PropertyValueFactory<>("oper"));
@@ -369,6 +370,8 @@ public class BOHomeController {
             transViewTable.getItems().add(item);
         }
 
+        transViewPostVoidButton.setDisable(trans.isVoided());
+
         transHistoryPane.setVisible(false);
         transViewPane.setVisible(true);
     }
@@ -396,6 +399,63 @@ public class BOHomeController {
             postMethod.setEntity(requestEntity);
 
             HttpResponse rawResponse = httpClient.execute(postMethod);
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML private void onTransViewPostVoidButtonPress() {
+        Alert receiptQuestion = new Alert(Alert.AlertType.CONFIRMATION);
+        receiptQuestion.setTitle("Post Void");
+        receiptQuestion.setHeaderText("Are you sure you want to void this transaction?");
+        receiptQuestion.setContentText("Please select an option.");
+        ButtonType yesButton = new ButtonType("Yes", ButtonBar.ButtonData.YES);
+        receiptQuestion.getButtonTypes().setAll(yesButton, new ButtonType("No", ButtonBar.ButtonData.NO));
+        boolean run = false;
+        receiptQuestion.showAndWait().ifPresent(buttonType -> {
+            if (buttonType == yesButton)
+                transViewVoid();
+        });
+    }
+
+    private void transViewVoid() {
+        TransactionListData selected = historyTable.getSelectionModel().getSelectedItem();
+
+        Transaction trans = BOApplication.gson.fromJson(selected.getItems(), Transaction.class);
+        trans.setVoided(true);
+        trans.addManagerAction("Post Void", app.operator.getOperatorId());
+
+        selected.setItems(BOApplication.gson.toJson(trans));
+        String items = selected.getItems().replaceAll("\"", "\\\\\"");
+
+        try {
+            HttpClient httpClient = HttpClientBuilder.create().build();
+            StringEntity requestEntity = new StringEntity(
+                    "{"
+                            + "\"utid\": \"" + selected.getUtid()
+                            + "\", \"items\": \"" + items
+                            + "\", \"token\": \"" + app.accessToken
+                            + "\"}",
+                    ContentType.APPLICATION_JSON);
+
+            HttpPost postMethod = new HttpPost("http://localhost:5000/bo/postvoid");
+            postMethod.setEntity(requestEntity);
+
+            HttpResponse rawResponse = httpClient.execute(postMethod);
+            String out = EntityUtils.toString(rawResponse.getEntity());
+            if (!out.equals("Success")) {
+                showError("Unknown error. Please try again later.");
+                return;
+            }
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Transaction " + selected.getUtid() + " voided successfully.", ButtonType.OK);
+            alert.setTitle("Success");
+            alert.setHeaderText("Success");
+            alert.showAndWait();
+
+            onTransViewBackButtonPress();
+            onHistorySubmitButtonPress();
         } catch (Exception e) {
             e.printStackTrace();
             showError(e.getMessage());
