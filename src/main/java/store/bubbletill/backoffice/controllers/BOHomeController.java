@@ -108,12 +108,12 @@ public class BOHomeController {
         }, 0, 5000);
 
         statusLabel.setText((app.workingOnline ? "Online" : "Offline"));
-        registerLabel.setText(app.register == -1 ? "N/A" : "" + app.register);
+        registerLabel.setText(app.register > -1 ? "" + app.register : "N/A");
         storeLabel.setText("" + app.store);
         operatorLabel.setText(app.operator.getOperatorId());
 
-        registerLabel.setVisible(app.register != -1);
-        registerTextLabel.setVisible(app.register != -1);
+        registerLabel.setVisible(app.register > -1);
+        registerTextLabel.setVisible(app.register > -1);
 
         homeNameLabel.setText("Welcome, " + app.operator.getName() + ".");
 
@@ -218,7 +218,7 @@ public class BOHomeController {
         historyStartTimeInput.setText(LocalTime.MIN.toString());
         historyEndTimeInput.setText(LocalTime.MAX.toString());
 
-        historyRegisterInput.setText("" + (app.register == -1 ? "" : app.register));
+        historyRegisterInput.setText("" + (app.register > -1 ? app.register : ""));
 
         historyOperatorInput.setText("");
 

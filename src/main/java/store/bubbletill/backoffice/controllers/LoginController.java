@@ -100,7 +100,7 @@ public class LoginController {
             Scene scene = new Scene(fxmlLoader.load(), 1920, 1080);
             Stage stage = (Stage) userIdForm.getScene().getWindow();
             stage.setScene(scene);
-            stage.setTitle("Bubbletill Backoffice 22.0.1");
+            stage.setTitle("Bubbletill Back Office 22.0.1");
             stage.setFullScreen(true);
             stage.setFullScreenExitHint("");
             stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);

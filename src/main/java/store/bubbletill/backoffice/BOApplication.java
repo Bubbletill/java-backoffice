@@ -2,6 +2,7 @@ package store.bubbletill.backoffice;
 
 import com.google.gson.Gson;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCombination;
@@ -43,69 +44,65 @@ public class BOApplication extends Application {
     public HashMap<String, OperatorData> operators = new HashMap<>();
 
     @Override
-    public void start(Stage stage) throws IOException {
+    public void start(Stage initStage) throws IOException {
+        Stage splashStage = launchSplash(initStage);
         instance = this;
-        this.stage = stage;
 
-        try {
-            // Reg number
-            HttpClient httpClient = HttpClientBuilder.create().build();
-            HttpGet method = new HttpGet("http://localhost:5001/info/regno");
-            HttpResponse rawResponse = httpClient.execute(method);
-            String out = EntityUtils.toString(rawResponse.getEntity());
-            register = Integer.parseInt(out);
-            System.out.println("Loaded regno");
+        new Thread(() -> {
+            try {
+                // Reg number
+                HttpClient httpClient = HttpClientBuilder.create().build();
+                HttpGet method = new HttpGet("http://localhost:5001/info/regno");
+                HttpResponse rawResponse = httpClient.execute(method);
+                String out = EntityUtils.toString(rawResponse.getEntity());
+                register = Integer.parseInt(out);
+                System.out.println("Loaded regno");
 
-            // Store number
-            method = new HttpGet("http://localhost:5001/info/storeno");
-            rawResponse = httpClient.execute(method);
-            out = EntityUtils.toString(rawResponse.getEntity());
-            store = Integer.parseInt(out);
-            System.out.println("Loaded storeno");
+                // Store number
+                method = new HttpGet("http://localhost:5001/info/storeno");
+                rawResponse = httpClient.execute(method);
+                out = EntityUtils.toString(rawResponse.getEntity());
+                store = Integer.parseInt(out);
+                System.out.println("Loaded storeno");
 
-            // Access token
-            method = new HttpGet("http://localhost:5001/info/accesstoken");
-            rawResponse = httpClient.execute(method);
-            out = EntityUtils.toString(rawResponse.getEntity());
-            accessToken = out;
-            System.out.println("Loaded access token");
+                // Access token
+                method = new HttpGet("http://localhost:5001/info/accesstoken");
+                rawResponse = httpClient.execute(method);
+                out = EntityUtils.toString(rawResponse.getEntity());
+                accessToken = out;
+                System.out.println("Loaded access token");
 
-            // Backend url
-            method = new HttpGet("http://localhost:5001/info/backend");
-            rawResponse = httpClient.execute(method);
-            out = EntityUtils.toString(rawResponse.getEntity());
-            backendUrl = out;
-            System.out.println("Loaded backend url " + out);
+                // Backend url
+                method = new HttpGet("http://localhost:5001/info/backend");
+                rawResponse = httpClient.execute(method);
+                out = EntityUtils.toString(rawResponse.getEntity());
+                backendUrl = out;
+                System.out.println("Loaded backend url " + out);
 
-            // Load operators
-            StringEntity requestEntity = new StringEntity(
-                    "{\"store\": \"" + store + "\", \"token\":\"" + accessToken + "\"}",
-                    ContentType.APPLICATION_JSON);
+                // Load operators
+                StringEntity requestEntity = new StringEntity(
+                        "{\"store\": \"" + store + "\", \"token\":\"" + accessToken + "\"}",
+                        ContentType.APPLICATION_JSON);
 
-            HttpPost methodPost = new HttpPost(backendUrl + "/bo/listoperators");
-            methodPost.setEntity(requestEntity);
-            rawResponse = httpClient.execute(methodPost);
-            out = EntityUtils.toString(rawResponse.getEntity());
-            OperatorData[] operatorData = gson.fromJson(out, OperatorData[].class);
-            for (OperatorData o : operatorData) {
-                operators.put(o.getOperatorId(), o);
+                HttpPost methodPost = new HttpPost(backendUrl + "/bo/listoperators");
+                methodPost.setEntity(requestEntity);
+                rawResponse = httpClient.execute(methodPost);
+                out = EntityUtils.toString(rawResponse.getEntity());
+                OperatorData[] operatorData = gson.fromJson(out, OperatorData[].class);
+                for (OperatorData o : operatorData) {
+                    operators.put(o.getOperatorId(), o);
+                }
+                System.out.println("Loaded operators");
+
+                Platform.runLater(this::postInit);
+            } catch (Exception e) {
+                System.out.println("Reg get failed: " + e.getMessage());
+                launchError(stage, "Failed to launch Backoffice: " + e.getMessage());
+                return;
+            } finally {
+                if (splashStage != null) { Platform.runLater(splashStage::close); }
             }
-            System.out.println("Loaded operators");
-
-        } catch (Exception e) {
-            System.out.println("Reg get failed: " + e.getMessage());
-            launchError(stage, "Failed to launch Backoffice: " + e.getMessage());
-            return;
-        }
-
-        FXMLLoader fxmlLoader = new FXMLLoader(BOApplication.class.getResource("login.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 1920, 1080);
-        stage.setTitle("Bubbletill Backoffice 22.0.1");
-        stage.setScene(scene);
-        stage.setFullScreen(true);
-        stage.setFullScreenExitHint("");
-        stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
-        stage.show();
+        }).start();
     }
 
     @Override
@@ -119,6 +116,42 @@ public class BOApplication extends Application {
 
     public static void main(String[] args) {
         launch();
+    }
+
+    private Stage launchSplash(Stage stage) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(BOApplication.class.getResource("splash.fxml"));
+            Scene scene = new Scene(fxmlLoader.load(), 600, 200);
+            stage.setScene(scene);
+            stage.setAlwaysOnTop(true);
+            stage.setResizable(false);
+            stage.centerOnScreen();
+            stage.initStyle(StageStyle.UNDECORATED);
+            stage.show();
+
+            return stage;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    private void postInit() {
+        try {
+            Stage primaryStage = new Stage(StageStyle.DECORATED);
+            this.stage = primaryStage;
+            FXMLLoader fxmlLoader = new FXMLLoader(BOApplication.class.getResource("login.fxml"));
+            Scene scene = new Scene(fxmlLoader.load(), 1920, 1080);
+            primaryStage.setTitle("Bubbletill Back Office 22.0.1");
+            primaryStage.setScene(scene);
+            primaryStage.setFullScreen(true);
+            primaryStage.setFullScreenExitHint("");
+            primaryStage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
+            primaryStage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void buzzer(String type) {
