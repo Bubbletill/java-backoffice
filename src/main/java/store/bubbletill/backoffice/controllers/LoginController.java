@@ -24,6 +24,8 @@ import store.bubbletill.commons.OperatorData;
 
 public class LoginController {
 
+    private final BOApplication app = BOApplication.getInstance();
+
     @FXML private TextField userIdForm;
     @FXML private PasswordField passwordForm;
 
@@ -54,27 +56,38 @@ public class LoginController {
     protected void onLoginButtonClick() {
         showError(null);
         try {
-            HttpClient httpClient = HttpClientBuilder.create().build();
+            if (app.operators.containsKey(userIdForm.getText())) {
+                OperatorData operator = app.operators.get(userIdForm.getText());
+                if (!operator.getPassword().equals(passwordForm.getText())) {
+                    showError("Error: Invalid user id or password.");
+                    return;
+                }
 
-            StringEntity requestEntity = new StringEntity(
-                    "{\"user\":\"" + userIdForm.getText() + "\",\"password\":\"" + passwordForm.getText() + "\", \"token\":\"" + BOApplication.getInstance().accessToken + "\"}",
-                    ContentType.APPLICATION_JSON);
+                app.operator = operator;
+            } else {
+                HttpClient httpClient = HttpClientBuilder.create().build();
 
-            HttpPost postMethod = new HttpPost("http://localhost:5000/pos/login");
-            postMethod.setEntity(requestEntity);
+                StringEntity requestEntity = new StringEntity(
+                        "{\"user\":\"" + userIdForm.getText() + "\",\"password\":\"" + passwordForm.getText() + "\", \"token\":\"" + app.accessToken + "\"}",
+                        ContentType.APPLICATION_JSON);
 
-            HttpResponse rawResponse = httpClient.execute(postMethod);
-            String out = EntityUtils.toString(rawResponse.getEntity());
+                HttpPost postMethod = new HttpPost(BOApplication.backendUrl + "/pos/login");
+                postMethod.setEntity(requestEntity);
 
-            ApiRequestData data = BOApplication.gson.fromJson(out, ApiRequestData.class);
+                HttpResponse rawResponse = httpClient.execute(postMethod);
+                String out = EntityUtils.toString(rawResponse.getEntity());
 
-            if (!data.isSuccess()) {
-                showError("Error: " + data.getMessage());
-                BOApplication.buzzer("double");
-                return;
+                ApiRequestData data = BOApplication.gson.fromJson(out, ApiRequestData.class);
+
+                if (!data.isSuccess()) {
+                    showError("Error: " + data.getMessage());
+                    BOApplication.buzzer("double");
+                    return;
+                }
+
+                app.operator = BOApplication.gson.fromJson(out, OperatorData.class);
+                app.operators.put(app.operator.getOperatorId(), app.operator);
             }
-
-            BOApplication.getInstance().operator = BOApplication.gson.fromJson(out, OperatorData.class);
 
             if (!BOApplication.getInstance().operator.isManager()) {
                 showError("You are not authorized to use Back Office.");

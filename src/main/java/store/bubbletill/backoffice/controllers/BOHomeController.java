@@ -243,7 +243,7 @@ public class BOHomeController {
                     "{\"store\":\"" + app.store + "\", \"token\":\"" + BOApplication.getInstance().accessToken + "\"}",
                     ContentType.APPLICATION_JSON);
 
-            HttpPost postMethod = new HttpPost("http://localhost:5000/bo/listoperators");
+            HttpPost postMethod = new HttpPost(BOApplication.backendUrl + "/bo/listoperators");
             postMethod.setEntity(requestEntity);
 
             HttpResponse rawResponse = httpClient.execute(postMethod);
@@ -308,7 +308,7 @@ public class BOHomeController {
                             + "\"}",
                     ContentType.APPLICATION_JSON);
 
-            HttpPost postMethod = new HttpPost("http://localhost:5000/bo/listtransactions");
+            HttpPost postMethod = new HttpPost(BOApplication.backendUrl + "/bo/listtransactions");
             postMethod.setEntity(requestEntity);
 
             HttpResponse rawResponse = httpClient.execute(postMethod);
@@ -439,7 +439,7 @@ public class BOHomeController {
                             + "\"}",
                     ContentType.APPLICATION_JSON);
 
-            HttpPost postMethod = new HttpPost("http://localhost:5000/bo/postvoid");
+            HttpPost postMethod = new HttpPost(BOApplication.backendUrl + "/bo/postvoid");
             postMethod.setEntity(requestEntity);
 
             HttpResponse rawResponse = httpClient.execute(postMethod);

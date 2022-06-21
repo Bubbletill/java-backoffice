@@ -18,10 +18,9 @@ import org.apache.http.util.EntityUtils;
 import store.bubbletill.backoffice.controllers.StartupErrorController;
 import store.bubbletill.commons.OperatorData;
 import store.bubbletill.commons.Transaction;
-import store.bubbletill.commons.TransactionListData;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.Timer;
 
 public class BOApplication extends Application {
@@ -38,6 +37,10 @@ public class BOApplication extends Application {
     public int store;
     public int register;
     public String accessToken;
+    public static String backendUrl;
+
+    // Cache info
+    public HashMap<String, OperatorData> operators = new HashMap<>();
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -66,6 +69,29 @@ public class BOApplication extends Application {
             out = EntityUtils.toString(rawResponse.getEntity());
             accessToken = out;
             System.out.println("Loaded access token");
+
+            // Backend url
+            method = new HttpGet("http://localhost:5001/info/backend");
+            rawResponse = httpClient.execute(method);
+            out = EntityUtils.toString(rawResponse.getEntity());
+            backendUrl = out;
+            System.out.println("Loaded backend url " + out);
+
+            // Load operators
+            StringEntity requestEntity = new StringEntity(
+                    "{\"store\": \"" + store + "\", \"token\":\"" + accessToken + "\"}",
+                    ContentType.APPLICATION_JSON);
+
+            HttpPost methodPost = new HttpPost(backendUrl + "/bo/listoperators");
+            methodPost.setEntity(requestEntity);
+            rawResponse = httpClient.execute(methodPost);
+            out = EntityUtils.toString(rawResponse.getEntity());
+            OperatorData[] operatorData = gson.fromJson(out, OperatorData[].class);
+            for (OperatorData o : operatorData) {
+                operators.put(o.getOperatorId(), o);
+            }
+            System.out.println("Loaded operators");
+
         } catch (Exception e) {
             System.out.println("Reg get failed: " + e.getMessage());
             launchError(stage, "Failed to launch Backoffice: " + e.getMessage());
@@ -96,13 +122,16 @@ public class BOApplication extends Application {
     }
 
     public static void buzzer(String type) {
-        try {
-            HttpClient httpClient = HttpClientBuilder.create().build();
-            HttpGet method = new HttpGet("http://localhost:5001/buzzer/" + type);
-            httpClient.execute(method);
-        } catch (Exception e) {
-            System.out.println("Buzzer failed: " + e.getMessage());
-        }
+        new Thread(() -> {
+            try {
+                HttpClient httpClient = HttpClientBuilder.create().build();
+                HttpGet method = new HttpGet("http://localhost:5001/buzzer/" + type);
+
+                httpClient.execute(method);
+            } catch (Exception e) {
+                System.out.println("Buzzer failed: " + e.getMessage());
+            }
+        }).start();
     }
 
     public static void launchError(Stage stage, String message) {
@@ -137,7 +166,7 @@ public class BOApplication extends Application {
                             + "\"}",
                     ContentType.APPLICATION_JSON);
 
-            HttpPost postMethod = new HttpPost("http://localhost:5000/bo/gettrans");
+            HttpPost postMethod = new HttpPost(backendUrl + "/bo/gettrans");
             postMethod.setEntity(requestEntity);
 
             HttpResponse rawResponse = httpClient.execute(postMethod);
