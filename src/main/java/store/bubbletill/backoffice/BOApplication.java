@@ -96,9 +96,8 @@ public class BOApplication extends Application {
 
                 Platform.runLater(this::postInit);
             } catch (Exception e) {
-                System.out.println("Reg get failed: " + e.getMessage());
-                launchError(stage, "Failed to launch Backoffice: " + e.getMessage());
-                return;
+                e.printStackTrace();
+                Platform.runLater(() -> launchError(new Stage(), "Failed to launch Back Office: " + e.getMessage()));
             } finally {
                 if (splashStage != null) { Platform.runLater(splashStage::close); }
             }
