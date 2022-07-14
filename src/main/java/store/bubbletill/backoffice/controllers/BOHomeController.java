@@ -57,6 +57,7 @@ public class BOHomeController {
     // Transaction View
     @FXML private Pane transViewPane;
     @FXML private TableView<StockData> transViewTable;
+    @FXML private ListView<String> transViewLogs;
     @FXML private Label transViewStoreLabel;
     @FXML private Label transViewRegisterLabel;
     @FXML private Label transViewTransLabel;
@@ -163,7 +164,6 @@ public class BOHomeController {
         historyTable.getColumns().get(4).setCellValueFactory(new PropertyValueFactory<>("trans"));
         historyTable.getColumns().get(5).setCellValueFactory(new PropertyValueFactory<>("oper"));
         historyTable.getColumns().get(6).setCellValueFactory(new PropertyValueFactory<>("total"));
-        historyTable.getColumns().get(7).setCellValueFactory(new PropertyValueFactory<>("primary_method"));
 
         transViewTable.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("category"));
         transViewTable.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("itemCode"));
@@ -314,6 +314,14 @@ public class BOHomeController {
             HttpResponse rawResponse = httpClient.execute(postMethod);
             String out = EntityUtils.toString(rawResponse.getEntity());
 
+            System.out.println("before " + out);
+            out = out.replaceAll("\"\\[", "[");
+            out = out.replaceAll("]\"", "]");
+
+            out = out.replaceAll("\"\\{", "{");
+            out = out.replaceAll("}\"", "}");
+            System.out.println("after "+ out);
+
             TransactionListData[] listData = BOApplication.gson.fromJson(out, TransactionListData[].class);
 
             for (TransactionListData t : listData) {
@@ -331,14 +339,13 @@ public class BOHomeController {
     @FXML private void onHistoryViewSelectedButtonPress() {
         showError(null);
         transViewTable.getItems().clear();
+        transViewLogs.getItems().clear();
         if (historyTable.getSelectionModel().getSelectedItem() == null) {
             showError("Please select a transaction to view.");
             return;
         }
 
         TransactionListData selected = historyTable.getSelectionModel().getSelectedItem();
-
-        Transaction trans = BOApplication.gson.fromJson(selected.getItems(), Transaction.class);
 
         transViewStoreLabel.setText("Store: " + selected.getStore());
         transViewRegisterLabel.setText("Register: " + selected.getRegister());
@@ -347,37 +354,29 @@ public class BOHomeController {
         transViewTimeLabel.setText("Time: " + selected.getTime());
 
         transViewTypeLabel.setText("Transaction Type: " + selected.getType().getLocalName());
-        transViewPrimMethodLabel.setText("Primary Payment Method: " + selected.getPrimary_method().getLocalName());
+        transViewPrimMethodLabel.setText("Payment Method(s): " + selected.getMethods().keySet());
         transViewTotalLabel.setText("Total: £" + Formatters.decimalFormatter.format(selected.getTotal()));
-        transViewVoidedLabel.setText("Voided: " + ((trans.isVoided()) ? "Yes" : "No"));
+        transViewVoidedLabel.setText("Voided: " + ((selected.getType() == TransactionType.VOID) ? "Yes" : "No"));
         transViewOperatorLabel.setText("Operator: " + selected.getOper());
 
-        StringBuilder mngrActions = new StringBuilder("");
-        if (!trans.getManagerActions().isEmpty()) {
-            for (Map.Entry<String, String> e : trans.getManagerActions().entrySet()) {
-                String addon = "";
-                if (!mngrActions.isEmpty())
-                    addon = ", ";
-                mngrActions.append(e.getKey()).append(" (").append(e.getValue()).append(")");
-            }
+        transViewManAuthLabel.setText("N/A");
 
-            transViewManAuthLabel.setText(mngrActions.toString());
-        } else {
-            transViewManAuthLabel.setText("N/A");
-        }
-
-        for (StockData item : trans.getBasket()) {
+        for (StockData item : selected.getBasket()) {
             transViewTable.getItems().add(item);
         }
 
-        transViewPostVoidButton.setDisable(trans.isVoided());
+        for (String log : selected.getData()) {
+            transViewLogs.getItems().add(log);
+        }
+
+        transViewPostVoidButton.setDisable(selected.getType() == TransactionType.VOID);
 
         transHistoryPane.setVisible(false);
         transViewPane.setVisible(true);
     }
 
     @FXML private void onTransViewPrintReceiptButtonPress() {
-        try {
+        /*try {
             TransactionListData selected = historyTable.getSelectionModel().getSelectedItem();
             String items = selected.getItems().replaceAll("\"", "\\\\\"");
 
@@ -402,7 +401,7 @@ public class BOHomeController {
         } catch (Exception e) {
             e.printStackTrace();
             showError(e.getMessage());
-        }
+        }*/
     }
 
     @FXML private void onTransViewPostVoidButtonPress() {
@@ -422,19 +421,15 @@ public class BOHomeController {
     private void transViewVoid() {
         TransactionListData selected = historyTable.getSelectionModel().getSelectedItem();
 
-        Transaction trans = BOApplication.gson.fromJson(selected.getItems(), Transaction.class);
-        trans.setVoided(true);
-        trans.addManagerAction("Post Void", app.operator.getOperatorId());
-
-        selected.setItems(BOApplication.gson.toJson(trans));
-        String items = selected.getItems().replaceAll("\"", "\\\\\"");
+        selected.getData().add("Transaction post-voided on " + Formatters.dateTimeFormatter.format(LocalDateTime.now()) + " by " + app.operator.getOperatorId());
+        String data = BOApplication.gson.toJson(selected.getData()).replaceAll("\"", "\\\\\"");
 
         try {
             HttpClient httpClient = HttpClientBuilder.create().build();
             StringEntity requestEntity = new StringEntity(
                     "{"
                             + "\"utid\": \"" + selected.getUtid()
-                            + "\", \"items\": \"" + items
+                            + "\", \"logs\": \"" + data
                             + "\", \"token\": \"" + app.accessToken
                             + "\"}",
                     ContentType.APPLICATION_JSON);
