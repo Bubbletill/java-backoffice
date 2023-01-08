@@ -17,10 +17,14 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import store.bubbletill.backoffice.controllers.StartupErrorController;
+import store.bubbletill.commons.LocalData;
 import store.bubbletill.commons.OperatorData;
 import store.bubbletill.commons.Transaction;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Timer;
 
@@ -35,10 +39,7 @@ public class BOApplication extends Application {
     // General Data
     public OperatorData operator;
     public boolean workingOnline = true;
-    public int store;
-    public int register;
-    public String accessToken;
-    public static String backendUrl;
+    public LocalData localData;
 
     // Cache info
     public HashMap<String, OperatorData> operators = new HashMap<>();
@@ -50,44 +51,19 @@ public class BOApplication extends Application {
 
         new Thread(() -> {
             try {
-                // Reg number
-                HttpClient httpClient = HttpClientBuilder.create().build();
-                HttpGet method = new HttpGet("http://localhost:5001/info/regno");
-                HttpResponse rawResponse = httpClient.execute(method);
-                String out = EntityUtils.toString(rawResponse.getEntity());
-                register = Integer.parseInt(out);
-                System.out.println("Loaded regno");
-
-                // Store number
-                method = new HttpGet("http://localhost:5001/info/storeno");
-                rawResponse = httpClient.execute(method);
-                out = EntityUtils.toString(rawResponse.getEntity());
-                store = Integer.parseInt(out);
-                System.out.println("Loaded storeno");
-
-                // Access token
-                method = new HttpGet("http://localhost:5001/info/accesstoken");
-                rawResponse = httpClient.execute(method);
-                out = EntityUtils.toString(rawResponse.getEntity());
-                accessToken = out;
-                System.out.println("Loaded access token");
-
-                // Backend url
-                method = new HttpGet("http://localhost:5001/info/backend");
-                rawResponse = httpClient.execute(method);
-                out = EntityUtils.toString(rawResponse.getEntity());
-                backendUrl = out;
-                System.out.println("Loaded backend url " + out);
+                Reader dataReader = Files.newBufferedReader(Paths.get("C:\\bubbletill\\data.json"));
+                localData = gson.fromJson(dataReader, LocalData.class);
 
                 // Load operators
+                HttpClient httpClient = HttpClientBuilder.create().build();
                 StringEntity requestEntity = new StringEntity(
-                        "{\"store\": \"" + store + "\", \"token\":\"" + accessToken + "\"}",
+                        "{\"store\": \"" + localData.getStore() + "\", \"token\":\"" + localData.getToken() + "\"}",
                         ContentType.APPLICATION_JSON);
 
-                HttpPost methodPost = new HttpPost(backendUrl + "/bo/listoperators");
+                HttpPost methodPost = new HttpPost(localData.getBackend() + "/bo/listoperators");
                 methodPost.setEntity(requestEntity);
-                rawResponse = httpClient.execute(methodPost);
-                out = EntityUtils.toString(rawResponse.getEntity());
+                HttpResponse rawResponse = httpClient.execute(methodPost);
+                String out = EntityUtils.toString(rawResponse.getEntity());
                 OperatorData[] operatorData = gson.fromJson(out, OperatorData[].class);
                 for (OperatorData o : operatorData) {
                     operators.put(o.getOperatorId(), o);
@@ -144,9 +120,10 @@ public class BOApplication extends Application {
             Scene scene = new Scene(fxmlLoader.load(), 1920, 1080);
             primaryStage.setTitle("Bubbletill Back Office 22.0.1");
             primaryStage.setScene(scene);
-            primaryStage.setFullScreen(true);
-            primaryStage.setFullScreenExitHint("");
+            primaryStage.initStyle(StageStyle.UNDECORATED);
             primaryStage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
+            primaryStage.setX(0);
+            primaryStage.setY(0);
             primaryStage.show();
         } catch (Exception e) {
             e.printStackTrace();
@@ -154,16 +131,7 @@ public class BOApplication extends Application {
     }
 
     public static void buzzer(String type) {
-        new Thread(() -> {
-            try {
-                HttpClient httpClient = HttpClientBuilder.create().build();
-                HttpGet method = new HttpGet("http://localhost:5001/buzzer/" + type);
 
-                httpClient.execute(method);
-            } catch (Exception e) {
-                System.out.println("Buzzer failed: " + e.getMessage());
-            }
-        }).start();
     }
 
     public static void launchError(Stage stage, String message) {
@@ -194,11 +162,11 @@ public class BOApplication extends Application {
                             + "\", \"register\": \"" + register
                             + "\", \"trans\": \"" + trans
                             + "\", \"date\": \"" + date
-                            + "\", \"token\" :\"" + accessToken
+                            + "\", \"token\" :\"" + localData.getToken()
                             + "\"}",
                     ContentType.APPLICATION_JSON);
 
-            HttpPost postMethod = new HttpPost(backendUrl + "/bo/gettrans");
+            HttpPost postMethod = new HttpPost(localData.getBackend() + "/bo/gettrans");
             postMethod.setEntity(requestEntity);
 
             HttpResponse rawResponse = httpClient.execute(postMethod);

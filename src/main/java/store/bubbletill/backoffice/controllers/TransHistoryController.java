@@ -1,14 +1,9 @@
 package store.bubbletill.backoffice.controllers;
 
-import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Pane;
-import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import javafx.util.converter.DateTimeStringConverter;
 import org.apache.http.HttpResponse;
@@ -19,26 +14,21 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import store.bubbletill.backoffice.BOApplication;
-import store.bubbletill.commons.*;
+import store.bubbletill.commons.Formatters;
+import store.bubbletill.commons.StockData;
+import store.bubbletill.commons.TransactionListData;
+import store.bubbletill.commons.TransactionType;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
-public class BOHomeController {
+public class TransHistoryController {
 
-    @FXML private Pane homePane;
-    @FXML private Label homeNameLabel;
-    @FXML private Button homeExitButton;
-
-    @FXML private Pane userManPane;
-    @FXML private Pane userManListPane;
-    @FXML private TableView<OperatorData> userManListTable;
+    private final BOApplication app = BOApplication.getInstance();
+    private final BOContainerController controller = BOContainerController.getInstance();
 
     // Transaction History
     @FXML private Pane transHistoryPane;
@@ -53,6 +43,7 @@ public class BOHomeController {
     @FXML private TextField historyStartTotalInput;
     @FXML private TextField historyEndTotalInput;
     private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+    private DateTimeFormatter dbDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yy");
 
     // Transaction View
     @FXML private Pane transViewPane;
@@ -71,60 +62,8 @@ public class BOHomeController {
     @FXML private Label transViewManAuthLabel;
     @FXML private Button transViewPostVoidButton;
 
-    // Top status bar
-    @FXML private Label dateTimeLabel;
-    @FXML private Label statusLabel;
-    @FXML private Label registerTextLabel;
-    @FXML private Label registerLabel;
-    @FXML private Label storeLabel;
-    @FXML private Label operatorLabel;
-    @FXML private Pane errorPane;
-    @FXML private Label errorLabel;
-
-    private BOApplication app;
-    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm");
-    DateTimeFormatter dbDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yy");
-
     @FXML
-    private void initialize() {
-        app = BOApplication.getInstance();
-
-        errorPane.setVisible(false);
-        homePane.setVisible(true);
-        userManPane.setVisible(false);
-        transHistoryPane.setVisible(false);
-        transViewPane.setVisible(false);
-
-        if (app.dateTimeTimer != null)
-            app.dateTimeTimer.cancel();
-
-        app.dateTimeTimer = new Timer();
-        app.dateTimeTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                Platform.runLater(() -> {
-                    dateTimeLabel.setText(dtf.format(LocalDateTime.now()));
-                });
-            }
-        }, 0, 5000);
-
-        statusLabel.setText((app.workingOnline ? "Online" : "Offline"));
-        registerLabel.setText(app.register > -1 ? "" + app.register : "N/A");
-        storeLabel.setText("" + app.store);
-        operatorLabel.setText(app.operator.getOperatorId());
-
-        registerLabel.setVisible(app.register > -1);
-        registerTextLabel.setVisible(app.register > -1);
-
-        homeNameLabel.setText("Welcome, " + app.operator.getName() + ".");
-
-        homeExitButton.requestFocus();
-
-        userManListTable.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("operatorId"));
-        userManListTable.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("name"));
-
-        homeExitButton.setText(app.register == -1 ? "Logout" : "Exit");
-
+    public void initialize() {
         StringConverter<LocalDate> dateStringConverter = new StringConverter<>() {
             final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yy");
 
@@ -170,46 +109,9 @@ public class BOHomeController {
         transViewTable.getColumns().get(2).setCellValueFactory(new PropertyValueFactory<>("description"));
         transViewTable.getColumns().get(3).setCellValueFactory(new PropertyValueFactory<>("price"));
         transViewTable.getColumns().get(4).setCellValueFactory(new PropertyValueFactory<>("priceWithReduction"));
-        transViewTable.getColumns().get(5).setCellValueFactory(new PropertyValueFactory<>("refunded"));
-    }
+        //transViewTable.getColumns().get(5).setCellValueFactory(new PropertyValueFactory<>("refunded"));
 
-    private void showError(String error) {
-        if (error == null) {
-            errorPane.setVisible(false);
-            return;
-        }
-
-        errorPane.setVisible(true);
-        errorLabel.setText(error);
-        BOApplication.buzzer("double");
-    }
-
-    // Home
-
-    @FXML
-    private void onHomeExitButtonPress() {
-        if (homeExitButton.getText().equals("Exit")) {
-            System.exit(0);
-            return;
-        }
-
-        try {
-            app.dateTimeTimer.cancel();
-            FXMLLoader fxmlLoader = new FXMLLoader(BOApplication.class.getResource("login.fxml"));
-            Scene scene = new Scene(fxmlLoader.load(), 1920, 1080);
-            Stage stage = (Stage) dateTimeLabel.getScene().getWindow();
-            stage.setTitle("Bubbletill Backoffice 22.0.1");
-            stage.setScene(scene);
-            stage.setFullScreen(true);
-            stage.setFullScreenExitHint("");
-            stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @FXML private void onHomeTransactionHistoryButtonPress() {
-        historyStoreInput.setText("" + app.store);
+        historyStoreInput.setText("" + app.localData.getStore());
         historyStoreInput.setDisable(true);
 
         historyStartDateInput.setValue(LocalDate.now());
@@ -218,7 +120,7 @@ public class BOHomeController {
         historyStartTimeInput.setText(LocalTime.MIN.toString());
         historyEndTimeInput.setText(LocalTime.MAX.toString());
 
-        historyRegisterInput.setText("" + (app.register > -1 ? app.register : ""));
+        historyRegisterInput.setText("" + (app.localData.getReg() > -1 ? app.localData.getReg() : ""));
 
         historyOperatorInput.setText("");
 
@@ -227,69 +129,17 @@ public class BOHomeController {
 
         historyTable.getItems().clear();
 
-        showError(null);
-        homePane.setVisible(false);
         transHistoryPane.setVisible(true);
+        transViewPane.setVisible(false);
     }
 
-    @FXML private void onHomeStoreOperationsButtonPress() { }
 
-    @FXML private void onHomeManageUsersButtonPress() {
-        userManListTable.getItems().clear();
-        try {
-            HttpClient httpClient = HttpClientBuilder.create().build();
-
-            StringEntity requestEntity = new StringEntity(
-                    "{\"store\":\"" + app.store + "\", \"token\":\"" + BOApplication.getInstance().accessToken + "\"}",
-                    ContentType.APPLICATION_JSON);
-
-            HttpPost postMethod = new HttpPost(BOApplication.backendUrl + "/bo/listoperators");
-            postMethod.setEntity(requestEntity);
-
-            HttpResponse rawResponse = httpClient.execute(postMethod);
-            String out = EntityUtils.toString(rawResponse.getEntity());
-
-            OperatorData[] listData = BOApplication.gson.fromJson(out, OperatorData[].class);
-
-            for (OperatorData od : listData) {
-                userManListTable.getItems().add(od);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            showError(e.getMessage());
-            return;
-        }
-
-        showError(null);
-        homePane.setVisible(false);
-        userManPane.setVisible(true);
-        userManListPane.setVisible(true);
-    }
-
-    // User Management
-
-    @FXML private void onUMMenuCreateButtonPress() { }
-
-    @FXML private void onUMMenuEditButtonPress() {
-        showError(null);
-        OperatorData selected = userManListTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showError("Please select an operator to edit.");
-            return;
-        }
-    }
-
-    @FXML private void onUMMenuBackButtonPress() {
-        showError(null);
-        homePane.setVisible(true);
-        userManPane.setVisible(false);
-    }
 
     // Transaction History
 
     @FXML private void onHistorySubmitButtonPress() {
         historyTable.getItems().clear();
-        showError(null);
+        controller.showError(null);
         try {
             HttpClient httpClient = HttpClientBuilder.create().build();
 
@@ -304,23 +154,21 @@ public class BOHomeController {
                             + "\", \"operator\": \"" + (historyOperatorInput.getText() == null || historyOperatorInput.getText().isEmpty() ? "" : historyOperatorInput.getText())
                             + "\", \"startTotal\": \"" + (historyStartTotalInput.getText() == null || historyStartTotalInput.getText().isEmpty() ? Double.MIN_VALUE : Double.parseDouble(historyStartTotalInput.getText()))
                             + "\", \"endTotal\": \"" + (historyEndTotalInput.getText() == null || historyEndTotalInput.getText().isEmpty() ? Double.MAX_VALUE : Double.parseDouble(historyEndTotalInput.getText()))
-                            + "\", \"token\" :\"" + app.accessToken
+                            + "\", \"token\" :\"" + app.localData.getToken()
                             + "\"}",
                     ContentType.APPLICATION_JSON);
 
-            HttpPost postMethod = new HttpPost(BOApplication.backendUrl + "/bo/listtransactions");
+            HttpPost postMethod = new HttpPost(app.localData.getBackend() + "/bo/listtransactions");
             postMethod.setEntity(requestEntity);
 
             HttpResponse rawResponse = httpClient.execute(postMethod);
             String out = EntityUtils.toString(rawResponse.getEntity());
 
-            System.out.println("before " + out);
             out = out.replaceAll("\"\\[", "[");
             out = out.replaceAll("]\"", "]");
 
             out = out.replaceAll("\"\\{", "{");
             out = out.replaceAll("}\"", "}");
-            System.out.println("after "+ out);
 
             TransactionListData[] listData = BOApplication.gson.fromJson(out, TransactionListData[].class);
 
@@ -329,19 +177,19 @@ public class BOHomeController {
             }
 
             if (listData.length == 0)
-                showError("Search returned no results.");
+                controller.showError("Search returned no results.");
         } catch (Exception e) {
             e.printStackTrace();
-            showError(e.getMessage());
+            controller.showError(e.getMessage());
         }
     }
 
     @FXML private void onHistoryViewSelectedButtonPress() {
-        showError(null);
+        controller.showError(null);
         transViewTable.getItems().clear();
         transViewLogs.getItems().clear();
         if (historyTable.getSelectionModel().getSelectedItem() == null) {
-            showError("Please select a transaction to view.");
+            controller.showError("Please select a transaction to view.");
             return;
         }
 
@@ -376,32 +224,7 @@ public class BOHomeController {
     }
 
     @FXML private void onTransViewPrintReceiptButtonPress() {
-        /*try {
-            TransactionListData selected = historyTable.getSelectionModel().getSelectedItem();
-            String items = selected.getItems().replaceAll("\"", "\\\\\"");
 
-            HttpClient httpClient = HttpClientBuilder.create().build();
-            StringEntity requestEntity = new StringEntity(
-                    "{"
-                            + "\"store\": \"" + selected.getStore()
-                            + "\", \"reg\": \"" + selected.getRegister()
-                            + "\", \"trans\": \"" + selected.getTrans()
-                            + "\", \"oper\": \"" + selected.getOper()
-                            + "\", \"datetime\": \"" + selected.getDate() + " " + selected.getTime()
-                            + "\", \"items\": \"" + items
-                            + "\", \"paydata\": \"" + "NA"
-                            + "\", \"copy\": true"
-                            + "}",
-                    ContentType.APPLICATION_JSON);
-
-            HttpPost postMethod = new HttpPost("http://localhost:5001/print/receipt");
-            postMethod.setEntity(requestEntity);
-
-            HttpResponse rawResponse = httpClient.execute(postMethod);
-        } catch (Exception e) {
-            e.printStackTrace();
-            showError(e.getMessage());
-        }*/
     }
 
     @FXML private void onTransViewPostVoidButtonPress() {
@@ -430,17 +253,17 @@ public class BOHomeController {
                     "{"
                             + "\"utid\": \"" + selected.getUtid()
                             + "\", \"logs\": \"" + data
-                            + "\", \"token\": \"" + app.accessToken
+                            + "\", \"token\": \"" + app.localData.getToken()
                             + "\"}",
                     ContentType.APPLICATION_JSON);
 
-            HttpPost postMethod = new HttpPost(BOApplication.backendUrl + "/bo/postvoid");
+            HttpPost postMethod = new HttpPost(app.localData.getBackend() + "/bo/postvoid");
             postMethod.setEntity(requestEntity);
 
             HttpResponse rawResponse = httpClient.execute(postMethod);
             String out = EntityUtils.toString(rawResponse.getEntity());
             if (!out.equals("Success")) {
-                showError("Unknown error. Please try again later.");
+                controller.showError("Unknown error. Please try again later.");
                 return;
             }
 
@@ -453,21 +276,19 @@ public class BOHomeController {
             onHistorySubmitButtonPress();
         } catch (Exception e) {
             e.printStackTrace();
-            showError(e.getMessage());
+            controller.showError(e.getMessage());
         }
     }
 
     @FXML private void onTransViewBackButtonPress() {
-        showError(null);
+        controller.showError(null);
         transHistoryPane.setVisible(true);
         transViewPane.setVisible(false);
     }
 
 
     @FXML private void onHistoryBackButtonPress() {
-        showError(null);
-        homePane.setVisible(true);
-        transHistoryPane.setVisible(false);
+        controller.updateSubScene("mainmenu");
     }
 
 }

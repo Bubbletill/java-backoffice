@@ -7,141 +7,14 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="1080.0" prefWidth="1920.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="store.bubbletill.backoffice.controllers.BOHomeController">
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1010.0" prefWidth="1920.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="store.bubbletill.backoffice.controllers.TransHistoryController">
    <children>
-      <Pane prefHeight="70.0" prefWidth="1920.0" style="-fx-background-color: #ffe0e0;">
-         <children>
-            <Label fx:id="registerTextLabel" layoutX="1246.0" layoutY="18.0" prefHeight="35.0" prefWidth="124.0" text="Register#">
-               <font>
-                  <Font size="20.0" />
-               </font>
-            </Label>
-            <Label fx:id="registerLabel" layoutX="1359.0" layoutY="22.0" text="11">
-               <font>
-                  <Font size="20.0" />
-               </font>
-            </Label>
-            <Label fx:id="dateTimeLabel" layoutX="950.0" layoutY="22.0" text="11/11/11 11:11">
-               <font>
-                  <Font size="20.0" />
-               </font>
-            </Label>
-            <Label fx:id="statusLabel" layoutX="1132.0" layoutY="22.0" text="Online">
-               <font>
-                  <Font size="20.0" />
-               </font>
-            </Label>
-            <Label layoutX="1456.0" layoutY="18.0" prefHeight="35.0" prefWidth="116.0" text="Store#">
-               <font>
-                  <Font size="20.0" />
-               </font>
-            </Label>
-            <Label fx:id="storeLabel" layoutX="1572.0" layoutY="22.0" text="1111">
-               <font>
-                  <Font size="20.0" />
-               </font>
-            </Label>
-            <Label layoutX="1682.0" layoutY="18.0" prefHeight="35.0" prefWidth="124.0" text="Operator#">
-               <font>
-                  <Font size="20.0" />
-               </font>
-            </Label>
-            <Label fx:id="operatorLabel" layoutX="1806.0" layoutY="22.0" text="1111">
-               <font>
-                  <Font size="20.0" />
-               </font>
-            </Label>
-            <ImageView fitHeight="70.0" fitWidth="69.0" layoutX="14.0" layoutY="3.0" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@logo-short.png" />
-               </image>
-            </ImageView>
-            <Pane fx:id="errorPane" layoutX="100.0" layoutY="10.0" prefHeight="52.0" prefWidth="828.0" style="-fx-background-color: #b80000;">
-               <children>
-                  <Label fx:id="errorLabel" layoutX="6.0" layoutY="-3.0" text="Error" textFill="WHITE" wrapText="true">
-                     <font>
-                        <Font size="23.0" />
-                     </font>
-                  </Label>
-               </children>
-            </Pane>
-         </children>
-      </Pane>
-      <Pane fx:id="homePane" layoutY="70.0" prefHeight="1010.0" prefWidth="1920.0" visible="false">
-         <children>
-            <Label fx:id="homeNameLabel" alignment="CENTER" layoutX="601.0" layoutY="303.0" prefHeight="53.0" prefWidth="712.0" text="Welcome, name" textAlignment="CENTER" wrapText="true">
-               <font>
-                  <Font size="36.0" />
-               </font>
-            </Label>
-            <Label alignment="CENTER" layoutX="601.0" layoutY="362.0" prefHeight="35.0" prefWidth="718.0" text="Please select an option below." textAlignment="CENTER">
-               <font>
-                  <Font size="24.0" />
-               </font>
-            </Label>
-            <Button layoutX="685.0" layoutY="409.0" mnemonicParsing="false" onAction="#onHomeTransactionHistoryButtonPress" prefHeight="96.0" prefWidth="168.0" text="Transaction History" textAlignment="CENTER" wrapText="true">
-               <font>
-                  <Font size="24.0" />
-               </font>
-            </Button>
-            <Button layoutX="873.0" layoutY="409.0" mnemonicParsing="false" onAction="#onHomeManageUsersButtonPress" prefHeight="96.0" prefWidth="168.0" text="Manage Users" textAlignment="CENTER" wrapText="true">
-               <font>
-                  <Font size="24.0" />
-               </font>
-            </Button>
-            <Button layoutX="1061.0" layoutY="409.0" mnemonicParsing="false" onAction="#onHomeStoreOperationsButtonPress" prefHeight="96.0" prefWidth="168.0" text="Store Operations" textAlignment="CENTER" wrapText="true">
-               <font>
-                  <Font size="24.0" />
-               </font>
-            </Button>
-            <Button fx:id="homeExitButton" layoutX="873.0" layoutY="516.0" mnemonicParsing="false" onAction="#onHomeExitButtonPress" prefHeight="96.0" prefWidth="168.0" text="Exit" textAlignment="CENTER" wrapText="true">
-               <font>
-                  <Font size="24.0" />
-               </font>
-            </Button>
-         </children>
-      </Pane>
-      <Pane fx:id="userManPane" layoutY="70.0" prefHeight="1010.0" prefWidth="1920.0" visible="false">
-         <children>
-            <Label layoutX="36.0" layoutY="14.0" prefHeight="53.0" prefWidth="691.0" text="User Management">
-               <font>
-                  <Font size="36.0" />
-               </font>
-            </Label>
-            <Button layoutX="36.0" layoutY="83.0" mnemonicParsing="false" onAction="#onUMMenuCreateButtonPress" prefHeight="96.0" prefWidth="168.0" text="Create" textAlignment="CENTER" wrapText="true">
-               <font>
-                  <Font size="24.0" />
-               </font>
-            </Button>
-            <Button layoutX="36.0" layoutY="187.0" mnemonicParsing="false" onAction="#onUMMenuEditButtonPress" prefHeight="96.0" prefWidth="168.0" text="Edit" textAlignment="CENTER" wrapText="true">
-               <font>
-                  <Font size="24.0" />
-               </font>
-            </Button>
-            <Button layoutX="36.0" layoutY="291.0" mnemonicParsing="false" onAction="#onUMMenuBackButtonPress" prefHeight="96.0" prefWidth="168.0" text="Back" textAlignment="CENTER" wrapText="true">
-               <font>
-                  <Font size="24.0" />
-               </font>
-            </Button>
-            <Pane fx:id="userManListPane" layoutX="346.0" layoutY="67.0" prefHeight="943.0" prefWidth="1574.0">
-               <children>
-                  <TableView fx:id="userManListTable" fixedCellSize="40.0" layoutX="487.0" prefHeight="927.0" prefWidth="600.0">
-                    <columns>
-                      <TableColumn prefWidth="300.0" text="User ID" />
-                      <TableColumn prefWidth="299.0" text="Name" />
-                    </columns>
-                  </TableView>
-               </children>
-            </Pane>
-         </children>
-      </Pane>
-      <Pane fx:id="transHistoryPane" layoutY="70.0" prefHeight="1010.0" prefWidth="1920.0" visible="false">
+      <Pane fx:id="transHistoryPane" prefHeight="1010.0" prefWidth="1920.0">
          <children>
             <Label layoutX="36.0" layoutY="14.0" prefHeight="53.0" prefWidth="691.0" text="Transaction History">
                <font>
@@ -149,15 +22,15 @@
                </font>
             </Label>
             <TableView fx:id="historyTable" layoutX="435.0" layoutY="67.0" prefHeight="859.0" prefWidth="927.0">
-              <columns>
+               <columns>
                   <TableColumn prefWidth="113.0" text="Store" />
-                <TableColumn prefWidth="113.0" text="Date" />
-                <TableColumn prefWidth="113.0" text="Type" />
+                  <TableColumn prefWidth="113.0" text="Date" />
+                  <TableColumn prefWidth="113.0" text="Type" />
                   <TableColumn prefWidth="113.0" text="Register" />
                   <TableColumn prefWidth="113.0" text="Transaction " />
                   <TableColumn prefWidth="113.0" text="Operator" />
                   <TableColumn prefWidth="113.0" text="Total" />
-              </columns>
+               </columns>
             </TableView>
             <Label layoutX="36.0" layoutY="67.0" prefHeight="27.0" prefWidth="307.0" text="Store">
                <font>
@@ -258,7 +131,7 @@
             </Button>
          </children>
       </Pane>
-      <Pane fx:id="transViewPane" layoutY="70.0" prefHeight="1010.0" prefWidth="1920.0">
+      <Pane fx:id="transViewPane" prefHeight="1010.0" prefWidth="1920.0" visible="false">
          <children>
             <Label layoutX="36.0" layoutY="14.0" prefHeight="53.0" prefWidth="691.0" text="Transaction View">
                <font>

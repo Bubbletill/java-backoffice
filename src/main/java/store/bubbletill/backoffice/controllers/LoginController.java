@@ -39,7 +39,7 @@ public class LoginController {
         userIdForm.requestFocus();
         errorPane.setVisible(false);
 
-        exitButton.setDisable(BOApplication.getInstance().register == -1);
+        exitButton.setDisable(BOApplication.getInstance().localData.getReg() == -1);
     }
 
     private void showError(String error) {
@@ -68,10 +68,10 @@ public class LoginController {
                 HttpClient httpClient = HttpClientBuilder.create().build();
 
                 StringEntity requestEntity = new StringEntity(
-                        "{\"user\":\"" + userIdForm.getText() + "\",\"password\":\"" + passwordForm.getText() + "\", \"token\":\"" + app.accessToken + "\"}",
+                        "{\"user\":\"" + userIdForm.getText() + "\",\"password\":\"" + passwordForm.getText() + "\", \"token\":\"" + app.localData.getToken() + "\"}",
                         ContentType.APPLICATION_JSON);
 
-                HttpPost postMethod = new HttpPost(BOApplication.backendUrl + "/pos/login");
+                HttpPost postMethod = new HttpPost(app.localData.getBackend() + "/pos/login");
                 postMethod.setEntity(requestEntity);
 
                 HttpResponse rawResponse = httpClient.execute(postMethod);
@@ -96,14 +96,10 @@ public class LoginController {
                 return;
             }
 
-            FXMLLoader fxmlLoader = new FXMLLoader(BOApplication.class.getResource("bohome.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(BOApplication.class.getResource("bocontainer.fxml"));
             Scene scene = new Scene(fxmlLoader.load(), 1920, 1080);
             Stage stage = (Stage) userIdForm.getScene().getWindow();
             stage.setScene(scene);
-            stage.setTitle("Bubbletill Back Office 22.0.1");
-            stage.setFullScreen(true);
-            stage.setFullScreenExitHint("");
-            stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
         } catch(Exception e) {
             e.printStackTrace();
             showError("Internal error: " + e.getMessage());
