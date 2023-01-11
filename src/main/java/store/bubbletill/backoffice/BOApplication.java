@@ -66,7 +66,7 @@ public class BOApplication extends Application {
                 String out = EntityUtils.toString(rawResponse.getEntity());
                 OperatorData[] operatorData = gson.fromJson(out, OperatorData[].class);
                 for (OperatorData o : operatorData) {
-                    operators.put(o.getOperatorId(), o);
+                    operators.put(o.getId(), o);
                 }
                 System.out.println("Loaded operators");
 

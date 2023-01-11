@@ -86,7 +86,7 @@ public class LoginController {
                 }
 
                 app.operator = BOApplication.gson.fromJson(out, OperatorData.class);
-                app.operators.put(app.operator.getOperatorId(), app.operator);
+                app.operators.put(app.operator.getId(), app.operator);
             }
 
             if (!BOApplication.getInstance().operator.isManager()) {

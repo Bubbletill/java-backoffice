@@ -73,7 +73,7 @@ public class BOContainerController {
         statusLabel.setText((app.workingOnline ? "Online" : "Offline"));
         registerLabel.setText(app.localData.getReg() > -1 ? "" + app.localData.getReg() : "N/A");
         storeLabel.setText("" + app.localData.getStore());
-        operatorLabel.setText(app.operator.getOperatorId());
+        operatorLabel.setText(app.operator.getId());
 
         registerLabel.setVisible(app.localData.getReg() > -1);
         registerTextLabel.setVisible(app.localData.getReg() > -1);

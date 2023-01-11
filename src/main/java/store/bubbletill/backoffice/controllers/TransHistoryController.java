@@ -244,7 +244,7 @@ public class TransHistoryController {
     private void transViewVoid() {
         TransactionListData selected = historyTable.getSelectionModel().getSelectedItem();
 
-        selected.getData().add("Transaction post-voided on " + Formatters.dateTimeFormatter.format(LocalDateTime.now()) + " by " + app.operator.getOperatorId());
+        selected.getData().add("Transaction post-voided on " + Formatters.dateTimeFormatter.format(LocalDateTime.now()) + " by " + app.operator.getId());
         String data = BOApplication.gson.toJson(selected.getData()).replaceAll("\"", "\\\\\"");
 
         try {
@@ -262,6 +262,7 @@ public class TransHistoryController {
 
             HttpResponse rawResponse = httpClient.execute(postMethod);
             String out = EntityUtils.toString(rawResponse.getEntity());
+            System.out.println(out);
             if (!out.equals("Success")) {
                 controller.showError("Unknown error. Please try again later.");
                 return;
