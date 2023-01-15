@@ -20,6 +20,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import store.bubbletill.backoffice.BOApplication;
 import store.bubbletill.commons.ApiRequestData;
+import store.bubbletill.commons.BOAction;
 import store.bubbletill.commons.OperatorData;
 
 public class LoginController {
@@ -36,10 +37,16 @@ public class LoginController {
 
     @FXML
     public void initialize() {
-        userIdForm.requestFocus();
+        resetForm();
         errorPane.setVisible(false);
 
         exitButton.setDisable(BOApplication.getInstance().localData.getReg() == -1);
+    }
+
+    private void resetForm() {
+        userIdForm.setText("");
+        passwordForm.setText("");
+        userIdForm.requestFocus();
     }
 
     private void showError(String error) {
@@ -60,6 +67,7 @@ public class LoginController {
                 OperatorData operator = app.operators.get(userIdForm.getText());
                 if (!operator.getPassword().equals(passwordForm.getText())) {
                     showError("Error: Invalid user id or password.");
+                    resetForm();
                     return;
                 }
 
@@ -89,10 +97,11 @@ public class LoginController {
                 app.operators.put(app.operator.getId(), app.operator);
             }
 
-            if (!BOApplication.getInstance().operator.isManager()) {
+            if (!app.operator.canPerformAction(app.operatorGroups, BOAction.ACCESS)) {
                 showError("You are not authorized to use Back Office.");
                 BOApplication.buzzer("double");
                 BOApplication.getInstance().operator = null;
+                resetForm();
                 return;
             }
 
@@ -103,6 +112,7 @@ public class LoginController {
         } catch(Exception e) {
             e.printStackTrace();
             showError("Internal error: " + e.getMessage());
+            resetForm();
         }
     }
 

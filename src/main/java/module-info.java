@@ -5,6 +5,7 @@ module store.bubbletill.backoffice {
     requires org.apache.httpcomponents.httpcore;
     requires com.google.gson;
     requires commons;
+    requires java.sql;
 
     opens store.bubbletill.backoffice to javafx.fxml;
     opens store.bubbletill.backoffice.controllers to javafx.fxml;

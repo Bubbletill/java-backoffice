@@ -4,15 +4,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Pane;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
 import store.bubbletill.backoffice.BOApplication;
 import store.bubbletill.commons.OperatorData;
+
+import java.util.ArrayList;
 
 public class UserManController {
 
@@ -25,24 +20,16 @@ public class UserManController {
 
     @FXML
     public void initialize() {
-        userManListTable.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("operatorId"));
+        userManListTable.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("id"));
         userManListTable.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("name"));
         userManListTable.getItems().clear();
 
         try {
-            HttpClient httpClient = HttpClientBuilder.create().build();
+            ArrayList<OperatorData> listData = app.databaseManager.getOperators();
 
-            StringEntity requestEntity = new StringEntity(
-                    "{\"store\":\"" + app.localData.getStore() + "\", \"token\":\"" + app.localData.getToken() + "\"}",
-                    ContentType.APPLICATION_JSON);
-
-            HttpPost postMethod = new HttpPost(app.localData.getBackend() + "/bo/listoperators");
-            postMethod.setEntity(requestEntity);
-
-            HttpResponse rawResponse = httpClient.execute(postMethod);
-            String out = EntityUtils.toString(rawResponse.getEntity());
-
-            OperatorData[] listData = BOApplication.gson.fromJson(out, OperatorData[].class);
+            if (listData == null) {
+                throw new Exception("Failed to retrieve operators from database.");
+            }
 
             for (OperatorData od : listData) {
                 userManListTable.getItems().add(od);
